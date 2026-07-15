@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 const LEARN_STEPS = [
   "Reading your website…",
@@ -26,6 +27,41 @@ export default function Wizard() {
   const [channels, setChannels] = useState<string[]>(["Email"]);
   const [mode, setMode] = useState<"Autopilot" | "Copilot">("Copilot");
   const [launched, setLaunched] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
+  async function launch() {
+    setSaveError("");
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      // Anonymous visitors need an account before their agent can launch.
+      router.push("/signup");
+      return;
+    }
+
+    const { error } = await supabase.from("agents").upsert(
+      {
+        user_id: user.id,
+        website: url.trim(),
+        offer: INFERRED.offer,
+        icp: INFERRED.icp,
+        signals: INFERRED.signals,
+        channels,
+        mode,
+        status: "running",
+      },
+      { onConflict: "user_id" }
+    );
+
+    if (error) {
+      setSaveError(error.message);
+      return;
+    }
+    setLaunched(true);
+  }
 
   // simulated learning progress
   useEffect(() => {
@@ -260,11 +296,14 @@ export default function Wizard() {
                   {mode} mode, prospecting around the clock.
                 </p>
                 <button
-                  onClick={() => setLaunched(true)}
+                  onClick={launch}
                   className="mt-8 rounded-full bg-berry-600 px-10 py-4 text-base font-bold text-white shadow-xl shadow-berry-600/30 transition hover:bg-berry-700"
                 >
                   Launch my agent
                 </button>
+                {saveError && (
+                  <p className="mt-4 text-sm text-berry-700">{saveError}</p>
+                )}
               </>
             ) : (
               <>
@@ -285,7 +324,8 @@ export default function Wizard() {
       </div>
 
       <p className="mt-4 text-center text-xs text-ink-600/60">
-        Demo flow — no data is stored or sent.
+        Launching saves your agent&apos;s setup to your account. No outreach is
+        sent yet — browsing the steps stores nothing.
       </p>
     </div>
   );

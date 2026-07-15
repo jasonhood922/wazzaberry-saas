@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import type { AgentConfig } from "./page";
 
 type Lead = {
   name: string;
@@ -36,7 +38,13 @@ const STATUS_STYLES: Record<Lead["status"], string> = {
   "Meeting booked": "bg-green-50 text-green-700",
 };
 
-export default function Dashboard() {
+export default function Dashboard({
+  agent = null,
+  signedIn = false,
+}: {
+  agent?: AgentConfig | null;
+  signedIn?: boolean;
+}) {
   const [filter, setFilter] = useState<"All" | Lead["channel"]>("All");
   const leads = LEADS.filter((l) => filter === "All" || l.channel === filter);
 
@@ -48,16 +56,35 @@ export default function Dashboard() {
             Good morning 👋
           </h1>
           <p className="text-sm text-ink-600">
-            Your agent contacted 46 prospects overnight. 3 replies are waiting.
+            {agent
+              ? `Your agent is set up for ${agent.website} — ${agent.mode} mode on ${agent.channels.join(" + ")}.`
+              : "Your agent contacted 46 prospects overnight. 3 replies are waiting."}
           </p>
         </div>
-        <span className="flex items-center gap-2 rounded-full bg-green-50 px-4 py-2 text-sm font-semibold text-green-700">
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="absolute h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
-            <span className="relative h-2.5 w-2.5 rounded-full bg-green-500" />
+        {agent ? (
+          <span className="flex items-center gap-2 rounded-full bg-green-50 px-4 py-2 text-sm font-semibold text-green-700">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="absolute h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+              <span className="relative h-2.5 w-2.5 rounded-full bg-green-500" />
+            </span>
+            Agent {agent.status}
           </span>
-          Agent running
-        </span>
+        ) : signedIn ? (
+          <Link
+            href="/app/onboarding"
+            className="rounded-full bg-berry-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-berry-600/25 transition hover:bg-berry-700"
+          >
+            Set up your agent →
+          </Link>
+        ) : (
+          <span className="flex items-center gap-2 rounded-full bg-green-50 px-4 py-2 text-sm font-semibold text-green-700">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="absolute h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+              <span className="relative h-2.5 w-2.5 rounded-full bg-green-500" />
+            </span>
+            Agent running
+          </span>
+        )}
       </div>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
