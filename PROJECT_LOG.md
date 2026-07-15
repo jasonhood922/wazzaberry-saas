@@ -52,6 +52,7 @@ npm run dev   # http://localhost:3000
 10. **Analytics & monitoring** — PostHog/Plausible + Sentry.
 11. **Honest marketing** — DONE (2026-07-15): fabricated social proof replaced with truthful early-access positioning (capability marquee, product-promise stats, testimonials reframed as labelled design-partner concept scenarios). Swap in real customer quotes and numbers as they arrive.
 12. **Analytics** — `@vercel/analytics` is wired into the root layout; enable Web Analytics once in the Vercel dashboard (project → Analytics tab) to start collecting.
+13. **Waitlist** — DONE (2026-07-15): `POST /api/waitlist` validates emails and stores each signup as a JSON blob in the private `wazzaberry-waitlist` Vercel Blob store (linked to the project; token auto-provisioned). The final-CTA section captures emails with success/error states. Read signups anytime with `npx vercel blob list` (token in `.env.local` / project env). Tested end-to-end locally and in production; test entries removed.
 
 ## Open items
 - [ ] Connect GitHub↔Vercel for auto-deploys (owner OAuth).
