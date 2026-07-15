@@ -50,7 +50,8 @@ npm run dev   # http://localhost:3000
 8. **Background jobs** — Inngest / Trigger.dev / Vercel Cron for 24/7 agent runs.
 9. **Compliance** — real Terms/Privacy/Legal drafted by counsel; GDPR/CAN-SPAM handling.
 10. **Analytics & monitoring** — PostHog/Plausible + Sentry.
-11. **Honest marketing** — the current stats, rating, and testimonials are illustrative placeholders; replace with real numbers before public launch.
+11. **Honest marketing** — DONE (2026-07-15): fabricated social proof replaced with truthful early-access positioning (capability marquee, product-promise stats, testimonials reframed as labelled design-partner concept scenarios). Swap in real customer quotes and numbers as they arrive.
+12. **Analytics** — `@vercel/analytics` is wired into the root layout; enable Web Analytics once in the Vercel dashboard (project → Analytics tab) to start collecting.
 
 ## Open items
 - [ ] Connect GitHub↔Vercel for auto-deploys (owner OAuth).
