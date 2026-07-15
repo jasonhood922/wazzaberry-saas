@@ -27,8 +27,7 @@ export default function Stats() {
       <div className="mx-auto max-w-6xl" ref={ref}>
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-extrabold tracking-tight text-ink-900 sm:text-4xl">
-            1,500 teams retired manual prospecting. Their agents run outbound
-            now.
+            Retire manual prospecting. Your agent runs outbound now.
           </h2>
         </div>
 

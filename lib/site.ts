@@ -13,9 +13,9 @@ export const NAV_LINKS = [
 ];
 
 export const STATS = [
-  { value: "1,500+", label: "Teams booking meetings with their agent" },
-  { value: "3hrs", label: "Saved per day on manual prospecting" },
+  { value: "24/7", label: "Your agent prospects while you sleep" },
   { value: "<5min", label: "From signup to a running agent" },
+  { value: "100%", label: "Of replies arrive pre-drafted, ready to send" },
 ];
 
 export const TESTIMONIALS = [

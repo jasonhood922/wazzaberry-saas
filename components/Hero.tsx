@@ -115,9 +115,7 @@ export default function Hero() {
         </div>
 
         <p className="mt-6 text-sm text-ink-600">
-          <span className="text-berry-500">★★★★★</span>{" "}
-          <strong>4.8/5</strong> — &ldquo;Like having a radar for prospects who are
-          already shopping.&rdquo;
+          Free early access · Live in 5 minutes · No credit card required
         </p>
       </div>
 
