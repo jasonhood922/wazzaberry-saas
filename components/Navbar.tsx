@@ -32,13 +32,13 @@ export default function Navbar() {
 
         <div className="hidden items-center gap-3 md:flex">
           <Link
-            href="/app"
+            href="/login"
             className="text-sm font-medium text-ink-600 transition hover:text-berry-600"
           >
             Log in
           </Link>
           <Link
-            href="/app"
+            href="/signup"
             className="rounded-full bg-berry-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-berry-600/20 transition hover:bg-berry-700"
           >
             Launch my agent free
