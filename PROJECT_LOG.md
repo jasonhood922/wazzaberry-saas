@@ -24,7 +24,7 @@
 
 ## Brand
 - Identity: dotted-berry + radar-arc mark. Canonical SVG in `components/Logo.tsx`; raster mark in `public/brand/logo.png`; favicon `app/icon.svg`; social card `public/og.png`.
-- Illustrations (`public/illustrations/`, generated via Kie.ai nano-banana, 2026-07-15): `berry-radar.png` (agent carousel visual) and `radar-sweep.png` (how-it-works banner). ~4 credits per image on Jason's Kie account.
+- Illustrations (`public/illustrations/`, generated via Kie.ai nano-banana, 2026-07-15): `berry-radar.png` (agent carousel visual, OG card, dashboard empty state) and `radar-sweep.png` (how-it-works banner). Note: both the Kie account (~0.8 credits) and the Higgsfield workspace are out of credits — top up either before requesting new assets.
 - Palette and voice: see `BRAND.md`.
 - Testimonial portraits are AI-generated and the site labels them as illustrative — replace with real customer quotes as they arrive.
 
