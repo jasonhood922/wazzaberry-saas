@@ -12,12 +12,14 @@ const LEARN_STEPS = [
   "Drafting your outreach voice…",
 ];
 
-const INFERRED = {
+const STARTER = {
   offer: "B2B SaaS platform for revenue teams",
   icp: "Founders, sales & growth leaders at 10–200 person B2B companies",
   tone: "Direct, friendly, benefit-led",
   signals: ["Competitor engagement", "Hiring activity", "Content engagement", "Lookalikes"],
 };
+
+type Inferred = typeof STARTER;
 
 export default function Wizard({
   initial = null,
@@ -37,6 +39,29 @@ export default function Wizard({
   );
   const [launched, setLaunched] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [inferred, setInferred] = useState<Inferred>(STARTER);
+  const [inferSource, setInferSource] = useState<"ai" | "fallback">("fallback");
+  const [inferDone, setInferDone] = useState(false);
+
+  async function runInference(website: string) {
+    setInferDone(false);
+    try {
+      const res = await fetch("/api/onboard", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ website }),
+      });
+      const data = await res.json();
+      if (res.ok && data.inferred) {
+        setInferred(data.inferred);
+        setInferSource(data.source);
+      }
+    } catch {
+      /* keep starter profile */
+    } finally {
+      setInferDone(true);
+    }
+  }
 
   async function launch() {
     setSaveError("");
@@ -55,9 +80,9 @@ export default function Wizard({
       {
         user_id: user.id,
         website: url.trim(),
-        offer: INFERRED.offer,
-        icp: INFERRED.icp,
-        signals: INFERRED.signals,
+        offer: inferred.offer,
+        icp: inferred.icp,
+        signals: inferred.signals,
         channels,
         mode,
         status: "running",
@@ -72,16 +97,17 @@ export default function Wizard({
     setLaunched(true);
   }
 
-  // simulated learning progress
+  // learning progress: the checklist animates while the real inference runs
   useEffect(() => {
     if (step !== 1) return;
     if (learnIdx >= LEARN_STEPS.length) {
+      if (!inferDone) return; // hold on the last step until the API settles
       const t = setTimeout(() => setStep(2), 600);
       return () => clearTimeout(t);
     }
     const t = setTimeout(() => setLearnIdx((i) => i + 1), 900);
     return () => clearTimeout(t);
-  }, [step, learnIdx]);
+  }, [step, learnIdx, inferDone]);
 
   useEffect(() => {
     if (!launched) return;
@@ -132,6 +158,7 @@ export default function Wizard({
                 if (url.trim()) {
                   setLearnIdx(0);
                   setStep(1);
+                  void runInference(url.trim());
                 }
               }}
               className="mt-6 flex gap-3"
@@ -190,25 +217,32 @@ export default function Wizard({
               Tweak anything that&apos;s off — the agent keeps refining this as
               it works.
             </p>
+            {inferSource === "fallback" && (
+              <p className="mt-3 rounded-xl bg-berry-50 px-4 py-2.5 text-xs text-berry-700">
+                Starter profile shown — automatic website analysis wasn&apos;t
+                available just now. Edit anything below; your agent refines it
+                over time.
+              </p>
+            )}
             <dl className="mt-6 space-y-4">
               <div className="rounded-2xl bg-berry-50/60 p-4">
                 <dt className="text-xs font-semibold uppercase tracking-wider text-berry-700">
                   What you sell
                 </dt>
-                <dd className="mt-1 text-sm text-ink-900">{INFERRED.offer}</dd>
+                <dd className="mt-1 text-sm text-ink-900">{inferred.offer}</dd>
               </div>
               <div className="rounded-2xl bg-berry-50/60 p-4">
                 <dt className="text-xs font-semibold uppercase tracking-wider text-berry-700">
                   Ideal customer profile
                 </dt>
-                <dd className="mt-1 text-sm text-ink-900">{INFERRED.icp}</dd>
+                <dd className="mt-1 text-sm text-ink-900">{inferred.icp}</dd>
               </div>
               <div className="rounded-2xl bg-berry-50/60 p-4">
                 <dt className="text-xs font-semibold uppercase tracking-wider text-berry-700">
                   Signals to watch
                 </dt>
                 <dd className="mt-2 flex flex-wrap gap-2">
-                  {INFERRED.signals.map((s) => (
+                  {inferred.signals.map((s) => (
                     <span
                       key={s}
                       className="rounded-full bg-white px-3 py-1 text-xs font-medium text-berry-700 ring-1 ring-berry-200"
