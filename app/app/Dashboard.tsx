@@ -79,7 +79,9 @@ export default function Dashboard({
           <p className="text-sm text-ink-600">
             {agent
               ? `Your agent is set up for ${agent.website} — ${agent.mode} mode on ${agent.channels.join(" + ")}.`
-              : "Your agent contacted 46 prospects overnight. 3 replies are waiting."}
+              : signedIn
+                ? "Let's get your agent up and running."
+                : "Your agent contacted 46 prospects overnight. 3 replies are waiting."}
           </p>
         </div>
         {agent ? (
@@ -124,6 +126,33 @@ export default function Dashboard({
           </span>
         )}
       </div>
+
+      {signedIn && !agent && (
+        <div className="mt-8 flex flex-col items-center gap-6 rounded-2xl border border-berry-100 bg-white p-8 sm:flex-row">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/illustrations/berry-radar.png"
+            alt=""
+            className="h-36 w-36 rounded-2xl object-cover"
+          />
+          <div>
+            <h2 className="text-lg font-bold text-ink-900">
+              Your agent isn&apos;t running yet
+            </h2>
+            <p className="mt-1 text-sm text-ink-600">
+              Three minutes of setup and it starts hunting your best-fit
+              buyers around the clock. The numbers below are sample data —
+              launch your agent to make them real.
+            </p>
+            <Link
+              href="/app/onboarding"
+              className="mt-4 inline-block rounded-full bg-berry-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-berry-600/25 transition hover:bg-berry-700"
+            >
+              Set up my agent →
+            </Link>
+          </div>
+        </div>
+      )}
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {KPIS.map((k) => (
