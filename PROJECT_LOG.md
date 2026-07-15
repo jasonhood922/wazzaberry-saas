@@ -40,8 +40,8 @@ npm run dev   # http://localhost:3000
 ```
 
 ## Production checklist (to run this as a real SaaS)
-1. **Auth** — Clerk / Auth.js / Supabase Auth (login, signup, teams).
-2. **Database** — Postgres (Supabase / Neon / Vercel Postgres): users, workspaces, leads, campaigns, messages, events.
+1. **Auth** — DONE (2026-07-15): Supabase Auth via `@supabase/ssr`. Project `wazzaberry` (ref `kkuxhlubynwbahukpjzk`, us-east-1) under jasonhood922's Supabase org. `/signup`, `/login`, logout in the app header; session-refresh middleware; `/app` shows the signed-in user (demo badge for anonymous visitors). Env vars `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` set locally (`.env.local`) and in Vercel Production. Note: `mailer_autoconfirm` is ON (no email verification) because no SMTP is configured — set up SMTP in Supabase and turn confirmations back on before public launch. DB password is in `.env.local`.
+2. **Database** — Supabase Postgres is provisioned (same project); next: `agents`/`leads`/`campaigns` tables with RLS, persist onboarding data.
 3. **Payments** — Stripe subscriptions for the Pro plan + customer portal.
 4. **AI layer** — Anthropic API (Claude) for ICP inference, lead scoring, message and reply drafting. Needs `ANTHROPIC_API_KEY`.
 5. **Lead data / signals** — enrichment providers + signal sources; a waterfall across multiple providers.
