@@ -35,7 +35,16 @@ export default function HowItWorks() {
           </p>
         </div>
 
-        <div className="mt-14 grid gap-8 md:grid-cols-3">
+        <div className="mt-12 overflow-hidden rounded-3xl border border-berry-100">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/illustrations/radar-sweep.png"
+            alt="WazzaBerry's radar sweep highlighting warm prospects"
+            className="h-40 w-full object-cover sm:h-56"
+          />
+        </div>
+
+        <div className="mt-10 grid gap-8 md:grid-cols-3">
           {STEPS.map((s) => (
             <div
               key={s.num}
