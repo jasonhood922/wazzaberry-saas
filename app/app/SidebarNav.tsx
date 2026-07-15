@@ -8,6 +8,7 @@ const ITEMS = [
   { label: "Campaigns", href: "/app/campaigns", icon: "🚀" },
   { label: "Inbox", href: "/app/inbox", icon: "✉️" },
   { label: "Agent setup", href: "/app/onboarding", icon: "🪄" },
+  { label: "Settings", href: "/app/settings", icon: "⚙️" },
 ];
 
 export default function SidebarNav() {

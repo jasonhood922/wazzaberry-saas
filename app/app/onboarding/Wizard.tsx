@@ -19,13 +19,22 @@ const INFERRED = {
   signals: ["Competitor engagement", "Hiring activity", "Content engagement", "Lookalikes"],
 };
 
-export default function Wizard() {
+export default function Wizard({
+  initial = null,
+}: {
+  initial?: { website: string; channels: string[]; mode: string } | null;
+}) {
   const router = useRouter();
+  const isUpdate = !!initial;
   const [step, setStep] = useState(0);
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState(initial?.website ?? "");
   const [learnIdx, setLearnIdx] = useState(0);
-  const [channels, setChannels] = useState<string[]>(["Email"]);
-  const [mode, setMode] = useState<"Autopilot" | "Copilot">("Copilot");
+  const [channels, setChannels] = useState<string[]>(
+    initial?.channels ?? ["Email"]
+  );
+  const [mode, setMode] = useState<"Autopilot" | "Copilot">(
+    initial?.mode === "Autopilot" ? "Autopilot" : "Copilot"
+  );
   const [launched, setLaunched] = useState(false);
   const [saveError, setSaveError] = useState("");
 
@@ -289,17 +298,18 @@ export default function Wizard() {
             {!launched ? (
               <>
                 <h1 className="text-2xl font-extrabold text-ink-900">
-                  Ready to launch 🚀
+                  {isUpdate ? "Ready to update ✨" : "Ready to launch 🚀"}
                 </h1>
                 <p className="mx-auto mt-2 max-w-sm text-ink-600">
-                  Your agent will start with {channels.join(" + ")} outreach in{" "}
-                  {mode} mode, prospecting around the clock.
+                  Your agent will {isUpdate ? "continue" : "start"} with{" "}
+                  {channels.join(" + ")} outreach in {mode} mode, prospecting
+                  around the clock.
                 </p>
                 <button
                   onClick={launch}
                   className="mt-8 rounded-full bg-berry-600 px-10 py-4 text-base font-bold text-white shadow-xl shadow-berry-600/30 transition hover:bg-berry-700"
                 >
-                  Launch my agent
+                  {isUpdate ? "Update my agent" : "Launch my agent"}
                 </button>
                 {saveError && (
                   <p className="mt-4 text-sm text-berry-700">{saveError}</p>

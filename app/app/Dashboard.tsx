@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import type { AgentConfig } from "./page";
 
 type Lead = {
@@ -45,8 +47,27 @@ export default function Dashboard({
   agent?: AgentConfig | null;
   signedIn?: boolean;
 }) {
+  const router = useRouter();
   const [filter, setFilter] = useState<"All" | Lead["channel"]>("All");
+  const [toggling, setToggling] = useState(false);
   const leads = LEADS.filter((l) => filter === "All" || l.channel === filter);
+
+  async function toggleStatus() {
+    if (!agent) return;
+    setToggling(true);
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      await supabase
+        .from("agents")
+        .update({ status: agent.status === "running" ? "paused" : "running" })
+        .eq("user_id", user.id);
+      router.refresh();
+    }
+    setToggling(false);
+  }
 
   return (
     <div>
@@ -62,13 +83,30 @@ export default function Dashboard({
           </p>
         </div>
         {agent ? (
-          <span className="flex items-center gap-2 rounded-full bg-green-50 px-4 py-2 text-sm font-semibold text-green-700">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="absolute h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
-              <span className="relative h-2.5 w-2.5 rounded-full bg-green-500" />
+          <div className="flex items-center gap-2">
+            <span
+              className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${
+                agent.status === "running"
+                  ? "bg-green-50 text-green-700"
+                  : "bg-gray-100 text-gray-600"
+              }`}
+            >
+              {agent.status === "running" && (
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="absolute h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+                  <span className="relative h-2.5 w-2.5 rounded-full bg-green-500" />
+                </span>
+              )}
+              Agent {agent.status}
             </span>
-            Agent {agent.status}
-          </span>
+            <button
+              onClick={toggleStatus}
+              disabled={toggling}
+              className="rounded-full border border-berry-200 px-4 py-2 text-xs font-semibold text-ink-900 transition hover:border-berry-400 disabled:opacity-50"
+            >
+              {toggling ? "…" : agent.status === "running" ? "Pause" : "Resume"}
+            </button>
+          </div>
         ) : signedIn ? (
           <Link
             href="/app/onboarding"
