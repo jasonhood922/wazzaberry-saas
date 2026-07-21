@@ -131,7 +131,7 @@ export default function Dashboard({
         <div className="mt-8 flex flex-col items-center gap-6 rounded-2xl border border-berry-100 bg-white p-8 sm:flex-row">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/illustrations/berry-radar.png"
+            src="/illustrations/berry-radar.webp"
             alt=""
             className="h-36 w-36 rounded-2xl object-cover"
           />

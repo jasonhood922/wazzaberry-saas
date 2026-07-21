@@ -89,7 +89,7 @@ export default function AgentCarousel() {
           <div className="relative flex h-72 items-center justify-center overflow-hidden rounded-3xl border border-berry-100 bg-gradient-to-br from-berry-50 to-white sm:h-96">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/illustrations/berry-radar.png"
+              src="/illustrations/berry-radar.webp"
               alt="WazzaBerry agent scanning for buying signals"
               className="animate-float-slow h-full w-full object-cover"
             />

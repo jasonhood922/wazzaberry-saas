@@ -70,6 +70,15 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
         />
       </label>
 
+      {mode === "login" && (
+        <a
+          href="/forgot-password"
+          className="mt-2 block text-right text-xs font-medium text-berry-600 hover:underline"
+        >
+          Forgot password?
+        </a>
+      )}
+
       {error && <p className="mt-4 text-sm text-berry-700">{error}</p>}
 
       <button

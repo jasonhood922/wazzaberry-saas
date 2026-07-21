@@ -38,7 +38,7 @@ export default function HowItWorks() {
         <div className="mt-12 overflow-hidden rounded-3xl border border-berry-100">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/illustrations/radar-sweep.png"
+            src="/illustrations/radar-sweep.webp"
             alt="WazzaBerry's radar sweep highlighting warm prospects"
             className="h-40 w-full object-cover sm:h-56"
           />
