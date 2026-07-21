@@ -15,7 +15,7 @@ WazzaBerry is an AI-sales-agent SaaS: it learns a business from its website, fin
 Hero with CSS dashboard mockup · capability marquee · 4-slide agent carousel with AI illustration · 3-step how-it-works with banner art · 5-category feature grid + stack-replacement card · product-promise stats · design-partner testimonial scenarios (labelled, AI portraits) · integrations · pricing (Pro $99 / Custom) · **working waitlist form** · FAQ · affiliate · connect-mcp · legal set (placeholders) · branded 404 · sitemap/robots · OG card.
 
 ### Product app (live, real backend)
-- **Auth:** Supabase (`@supabase/ssr`) — `/signup`, `/login`, logout, session middleware.
+- **Auth:** Supabase (`@supabase/ssr`) — `/signup`, `/login`, logout, session middleware, and full password recovery (`/forgot-password` → email link → `/auth/confirm` → `/reset-password`). Recovery emails use Supabase's built-in sender (rate-limited ~2/hour until SMTP is configured).
 - **Onboarding wizard** (`/app/onboarding`): enter website → **real AI inference** via `/api/onboard` (falls back to a starter profile when unavailable) → review ICP → channels + Copilot/Autopilot → launch. Saves to Postgres; prefills and becomes an update flow for existing agents.
 - **Dashboard** (`/app`): shows the saved agent (website, mode, channels) with working **pause/resume**; illustrated empty state for new users; sample lead table clearly labelled.
 - **Campaigns / Inbox** (`/app/campaigns`, `/app/inbox`): sample-data demos of the intended UX.
