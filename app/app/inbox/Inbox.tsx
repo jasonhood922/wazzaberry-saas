@@ -54,8 +54,43 @@ export default function Inbox() {
     Object.fromEntries(THREADS.map((t) => [t.id, t.draft]))
   );
   const [sent, setSent] = useState<number[]>([]);
+  const [drafting, setDrafting] = useState(false);
+  const [draftNote, setDraftNote] = useState("");
 
   const thread = THREADS.find((t) => t.id === selected)!;
+
+  async function redraftWithAi() {
+    setDrafting(true);
+    setDraftNote("");
+    try {
+      const res = await fetch("/api/draft-reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prospect: {
+            name: thread.name,
+            company: thread.company,
+            message: thread.message,
+          },
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.source === "ai" && data.draft) {
+        setDrafts((d) => ({ ...d, [thread.id]: data.draft }));
+        setDraftNote("✨ Freshly drafted by your agent.");
+      } else {
+        setDraftNote(
+          "AI drafting isn't available right now — keeping the template draft."
+        );
+      }
+    } catch {
+      setDraftNote(
+        "AI drafting isn't available right now — keeping the template draft."
+      );
+    } finally {
+      setDrafting(false);
+    }
+  }
 
   return (
     <div>
@@ -121,12 +156,24 @@ export default function Inbox() {
           </div>
 
           <div className="mt-5">
-            <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-berry-700">
-              <span>✨ Agent-drafted reply</span>
-              <span className="rounded-full bg-berry-50 px-2 py-0.5 text-[10px] font-medium normal-case tracking-normal">
-                edit freely
-              </span>
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-berry-700">
+                <span>✨ Agent-drafted reply</span>
+                <span className="rounded-full bg-berry-50 px-2 py-0.5 text-[10px] font-medium normal-case tracking-normal">
+                  edit freely
+                </span>
+              </div>
+              <button
+                onClick={redraftWithAi}
+                disabled={drafting}
+                className="rounded-full border border-berry-200 px-3 py-1 text-[11px] font-semibold text-berry-700 transition hover:border-berry-400 disabled:opacity-50"
+              >
+                {drafting ? "Drafting…" : "↻ Redraft with AI"}
+              </button>
             </div>
+            {draftNote && (
+              <p className="mb-2 text-xs text-ink-600">{draftNote}</p>
+            )}
             <textarea
               value={drafts[thread.id]}
               onChange={(e) =>
