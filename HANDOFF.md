@@ -37,8 +37,9 @@ Hero with CSS dashboard mockup · capability marquee · 4-slide agent carousel w
 - `lib/site.ts` — nav/stats/testimonials/pricing data.
 - `lib/supabase/{client,server}.ts` + `middleware.ts` — auth plumbing.
 - `app/api/waitlist/route.ts` — email capture → Vercel Blob (IP-rate-limited 10/h; blobs keyed by email+timestamp).
-- `app/api/onboard/route.ts` — fetches the user's site, calls Kie.ai chat (`deepseek-chat`) for offer/ICP/tone/signals as strict JSON; falls back gracefully (IP-rate-limited 5/h).
-- `app/api/draft-reply/route.ts` — AI reply drafting; requires a signed-in user, 20/h per user.
+- `lib/llm.ts` — provider-agnostic completion layer: **Anthropic (`claude-opus-4-8` via the official SDK) is primary whenever `ANTHROPIC_API_KEY` is set** (add it to `.env.local` + Vercel Production to activate); Kie.ai `deepseek-chat` is the backup (one retry on 5xx); callers fall back to static defaults when both fail.
+- `app/api/onboard/route.ts` — fetches the user's site, infers offer/ICP/tone/signals via `lib/llm.ts` as strict JSON; falls back gracefully (IP-rate-limited 5/h).
+- `app/api/draft-reply/route.ts` — AI reply drafting via `lib/llm.ts` (response reports which provider drafted); requires a signed-in user, 20/h per user.
 - `lib/rate-limit.ts` — best-effort in-memory limiter (per serverless instance); swap for Upstash/Redis at real scale.
 - Security headers (HSTS, nosniff, frame-deny, referrer/permissions policies) set site-wide in `next.config.ts`.
 - `/app/waitlist` — admin-only signup viewer, gated by the `ADMIN_EMAILS` env var (comma-separated; set locally + Vercel Production).
