@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 export const maxDuration = 60;
 
@@ -94,6 +95,14 @@ async function inferWithKie(website: string, siteText: string) {
 }
 
 export async function POST(request: Request) {
+  const { allowed } = rateLimit(`onboard:${clientIp(request)}`, 5, 60 * 60 * 1000);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many requests — try again later." },
+      { status: 429 }
+    );
+  }
+
   let website: unknown;
   try {
     ({ website } = await request.json());

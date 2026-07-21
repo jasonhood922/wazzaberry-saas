@@ -1,9 +1,18 @@
 import { NextResponse } from "next/server";
 import { put } from "@vercel/blob";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 export async function POST(request: Request) {
+  const { allowed } = rateLimit(`waitlist:${clientIp(request)}`, 10, 60 * 60 * 1000);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many requests — try again later." },
+      { status: 429 }
+    );
+  }
+
   let email: unknown;
   try {
     ({ email } = await request.json());
@@ -34,7 +43,7 @@ export async function POST(request: Request) {
   };
 
   await put(
-    `waitlist/${Date.now()}-${crypto.randomUUID()}.json`,
+    `waitlist/${encodeURIComponent(clean)}-${Date.now()}.json`,
     JSON.stringify(entry),
     { access: "private", contentType: "application/json" }
   );

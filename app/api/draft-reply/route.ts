@@ -1,9 +1,26 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
+  // Drafting is an app feature: signed-in users only, per-user limited.
+  const supabaseAuth = await createClient();
+  const {
+    data: { user: authedUser },
+  } = await supabaseAuth.auth.getUser();
+  if (!authedUser) {
+    return NextResponse.json({ error: "Sign in to draft replies." }, { status: 401 });
+  }
+  const { allowed } = rateLimit(`draft:${authedUser.id}`, 20, 60 * 60 * 1000);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Drafting limit reached — try again later." },
+      { status: 429 }
+    );
+  }
+
   let prospect: { name?: string; company?: string; message?: string } = {};
   try {
     ({ prospect } = await request.json());
@@ -26,19 +43,13 @@ export async function POST(request: Request) {
   // Pull the signed-in user's agent profile for context (optional).
   let context = "";
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (user) {
-      const { data: agent } = await supabase
-        .from("agents")
-        .select("website, offer, icp")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      if (agent) {
-        context = `The sender works at ${agent.website}. They sell: ${agent.offer}. Their ideal customer: ${agent.icp}.`;
-      }
+    const { data: agent } = await supabaseAuth
+      .from("agents")
+      .select("website, offer, icp")
+      .eq("user_id", authedUser.id)
+      .maybeSingle();
+    if (agent) {
+      context = `The sender works at ${agent.website}. They sell: ${agent.offer}. Their ideal customer: ${agent.icp}.`;
     }
   } catch {
     /* context is optional */
