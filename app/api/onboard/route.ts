@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { completeText } from "@/lib/llm";
 
 export const maxDuration = 60;
 
@@ -38,39 +39,14 @@ async function fetchSiteText(website: string): Promise<string | null> {
   }
 }
 
-async function inferWithKie(website: string, siteText: string) {
-  const key = process.env.KIE_API_KEY;
-  if (!key) return null;
-
-  const res = await fetch("https://api.kie.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "deepseek-chat",
-      max_tokens: 500,
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are a B2B go-to-market analyst. Given website text, respond with ONLY a JSON object, no prose, with keys: offer (string, what the company sells, <=90 chars), icp (string, who the ideal buyer is, <=110 chars), tone (string, 3-5 words describing the pitch voice), signals (array of exactly 4 short buying-signal names relevant to this business).",
-        },
-        {
-          role: "user",
-          content: `Website: ${website}\n\nSite text:\n${siteText}`,
-        },
-      ],
-    }),
-    signal: AbortSignal.timeout(40_000),
-  });
-
-  if (!res.ok) return null;
-  const data = await res.json();
-  const content: string | undefined =
-    data?.choices?.[0]?.message?.content ?? data?.data?.choices?.[0]?.message?.content;
-  if (!content) return null;
+async function inferProfile(website: string, siteText: string) {
+  const result = await completeText(
+    "You are a B2B go-to-market analyst. Given website text, respond with ONLY a JSON object, no prose, with keys: offer (string, what the company sells, <=90 chars), icp (string, who the ideal buyer is, <=110 chars), tone (string, 3-5 words describing the pitch voice), signals (array of exactly 4 short buying-signal names relevant to this business).",
+    `Website: ${website}\n\nSite text:\n${siteText}`,
+    500
+  );
+  if (!result) return null;
+  const content = result.text;
 
   const match = content.match(/\{[\s\S]*\}/);
   if (!match) return null;
@@ -117,7 +93,7 @@ export async function POST(request: Request) {
   const clean = website.trim().toLowerCase().replace(/^https?:\/\//, "").split("/")[0];
 
   const siteText = await fetchSiteText(clean);
-  const inferred = siteText ? await inferWithKie(clean, siteText) : null;
+  const inferred = siteText ? await inferProfile(clean, siteText) : null;
 
   return NextResponse.json({
     ok: true,
