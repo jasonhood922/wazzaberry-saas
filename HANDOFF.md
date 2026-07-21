@@ -74,9 +74,8 @@ Test account: `jason+test@jasonhood.me` (ask Jason for the current password).
 
 ## 6. Roadmap (in recommended order)
 
-1. Top up Kie credits → verify live AI onboarding inference.
-2. AI reply drafting in the inbox (same Kie pipeline, fallback-safe).
-3. Stripe subscriptions for Pro $99 (+ customer portal).
+1. Top up Kie credits → verify live AI onboarding inference **and** inbox reply drafting (both built and fallback-safe; DONE 2026-07-16: `/api/draft-reply` + inbox "Redraft with AI" action).
+2. Stripe subscriptions for Pro $99 (+ customer portal).
 4. Real lead sourcing (provider decision: Apify actors / Apollo / PDL) + `leads`, `campaigns`, `messages` tables.
 5. Email sending infrastructure (Resend/Smartlead) with suppression list wired to `/opt-out`.
 6. Background jobs (Inngest / Vercel Cron) for the 24/7 agent loop.
