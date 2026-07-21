@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import type { AgentConfig } from "./page";
+import type { AgentConfig, DbLead } from "./page";
 
 type Lead = {
   name: string;
@@ -40,17 +40,39 @@ const STATUS_STYLES: Record<Lead["status"], string> = {
   "Meeting booked": "bg-green-50 text-green-700",
 };
 
+const DB_STATUS_LABEL: Record<DbLead["status"], Lead["status"]> = {
+  queued: "Queued",
+  contacted: "Contacted",
+  replied: "Replied",
+  meeting_booked: "Meeting booked",
+};
+
 export default function Dashboard({
   agent = null,
   signedIn = false,
+  realLeads = [],
 }: {
   agent?: AgentConfig | null;
   signedIn?: boolean;
+  realLeads?: DbLead[];
 }) {
   const router = useRouter();
   const [filter, setFilter] = useState<"All" | Lead["channel"]>("All");
   const [toggling, setToggling] = useState(false);
-  const leads = LEADS.filter((l) => filter === "All" || l.channel === filter);
+
+  const usingRealLeads = realLeads.length > 0;
+  const allLeads: Lead[] = usingRealLeads
+    ? realLeads.map((l) => ({
+        name: l.name,
+        company: l.company ?? "—",
+        role: l.role ?? "—",
+        score: l.score ?? 0,
+        signal: l.signal ?? "—",
+        channel: (l.channel === "Social" ? "Social" : "Email") as Lead["channel"],
+        status: DB_STATUS_LABEL[l.status],
+      }))
+    : LEADS;
+  const leads = allLeads.filter((l) => filter === "All" || l.channel === filter);
 
   async function toggleStatus() {
     if (!agent) return;
@@ -170,7 +192,18 @@ export default function Dashboard({
 
       <div className="mt-8 rounded-2xl border border-berry-100 bg-white">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-berry-100 px-5 py-4">
-          <h2 className="font-bold text-ink-900">Warm leads</h2>
+          <h2 className="flex items-center gap-2 font-bold text-ink-900">
+            Warm leads
+            <span
+              className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+                usingRealLeads
+                  ? "bg-green-50 text-green-700"
+                  : "bg-berry-50 text-berry-700"
+              }`}
+            >
+              {usingRealLeads ? "Live data" : "Sample data"}
+            </span>
+          </h2>
           <div className="flex gap-1 rounded-full bg-berry-50 p-1">
             {(["All", "Email", "Social"] as const).map((f) => (
               <button

@@ -1,9 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import type { DbCampaign } from "./page";
 
 type Campaign = {
   id: number;
+  dbId?: string;
   name: string;
   agent: string;
   channels: string[];
@@ -50,19 +54,58 @@ const INITIAL: Campaign[] = [
   },
 ];
 
-export default function Campaigns() {
-  const [campaigns, setCampaigns] = useState(INITIAL);
+export default function Campaigns({
+  realCampaigns = [],
+}: {
+  realCampaigns?: DbCampaign[];
+}) {
+  const router = useRouter();
+  const usingReal = realCampaigns.length > 0;
+  const mapped: Campaign[] = realCampaigns.map((c, i) => ({
+    id: i + 1,
+    dbId: c.id,
+    name: c.name,
+    agent: "Agent 1",
+    channels: c.channels,
+    contacted: 0,
+    replies: 0,
+    meetings: 0,
+    benchmark: "Gathering data",
+    running: c.status === "running",
+  }));
+  const [campaigns, setCampaigns] = useState(usingReal ? mapped : INITIAL);
 
-  const toggle = (id: number) =>
+  const toggle = async (id: number) => {
+    const target = campaigns.find((c) => c.id === id);
     setCampaigns((cs) =>
       cs.map((c) => (c.id === id ? { ...c, running: !c.running } : c))
     );
+    if (usingReal && target?.dbId) {
+      const supabase = createClient();
+      await supabase
+        .from("campaigns")
+        .update({ status: target.running ? "paused" : "running" })
+        .eq("id", target.dbId);
+      router.refresh();
+    }
+  };
 
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold text-ink-900">Campaigns</h1>
+          <h1 className="flex items-center gap-2 text-2xl font-extrabold text-ink-900">
+            Campaigns
+            <span
+              className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+                usingReal
+                  ? "bg-green-50 text-green-700"
+                  : "bg-berry-50 text-berry-700"
+              }`}
+            >
+              {usingReal ? "Live data" : "Sample data"}
+            </span>
+          </h1>
           <p className="text-sm text-ink-600">
             Your agents adjust these automatically as they learn what converts.
           </p>
@@ -74,7 +117,10 @@ export default function Campaigns() {
 
       <div className="space-y-4">
         {campaigns.map((c) => {
-          const replyRate = ((c.replies / c.contacted) * 100).toFixed(1);
+          const replyRate =
+            c.contacted > 0
+              ? ((c.replies / c.contacted) * 100).toFixed(1)
+              : "0.0";
           return (
             <div
               key={c.id}
