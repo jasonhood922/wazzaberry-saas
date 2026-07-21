@@ -22,7 +22,8 @@ Hero with CSS dashboard mockup · capability marquee · 4-slide agent carousel w
 - **Settings** (`/app/settings`): password change, retire agent. Auth-required.
 
 ### Data & storage
-- **Supabase project `wazzaberry`** (ref `kkuxhlubynwbahukpjzk`, us-east-1): auth users + `public.agents` table (one row per user; RLS: users only touch their own row).
+- **Supabase project `wazzaberry-v2`** (ref `muxpticwqsdqhoqiambp`, us-east-1) — the ACTIVE database since 2026-07-21, created fresh at Jason's request. Tables: `agents` (one per user), `campaigns`, `leads`, `messages` — all with own-rows RLS policies and indexes. The dashboard and campaigns pages show **Live data** when real rows exist and labelled sample data otherwise; campaign pause/resume persists.
+- The older project `wazzaberry` (ref `kkuxhlubynwbahukpjzk`) still exists but is **disconnected** — its users/agents did not migrate. Delete it in the Supabase dashboard if unwanted. Current v2 test account: `jason+v2test@jasonhood.me`.
 - **Vercel Blob store `wazzaberry-waitlist`** (private): each waitlist signup is a JSON blob. Read with `npx vercel blob list` from the project folder.
 
 ### Brand
