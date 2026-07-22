@@ -1,14 +1,18 @@
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import Logo from "@/components/Logo";
 
 export default function NotFound() {
   return (
     <main>
       <Navbar />
       <section className="flex min-h-[60vh] flex-col items-center justify-center px-4 py-20 text-center">
-        <Logo className="h-16 w-16 opacity-60" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/illustrations/berry-404.webp"
+          alt="A berry searching with a magnifying glass"
+          className="h-44 w-44 rounded-3xl object-cover"
+        />
         <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-ink-900">
           This page went cold.
         </h1>

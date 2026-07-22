@@ -51,7 +51,16 @@ export default function ConnectMcpPage() {
           </p>
         </div>
 
-        <div className="mx-auto mt-14 max-w-3xl space-y-6">
+        <div className="mx-auto mt-10 max-w-3xl overflow-hidden rounded-3xl border border-berry-100">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/illustrations/mcp-connect.webp"
+            alt="WazzaBerry connecting to your tools"
+            className="h-44 w-full object-cover sm:h-56"
+          />
+        </div>
+
+        <div className="mx-auto mt-10 max-w-3xl space-y-6">
           {STEPS.map((s) => (
             <div
               key={s.num}
