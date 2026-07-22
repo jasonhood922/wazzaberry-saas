@@ -1,62 +1,73 @@
 # WazzaBerry — Project Log
 
 **Product:** WazzaBerry — an AI sales agent that finds warm, ready-to-buy leads and runs multichannel outreach automatically.
-**Started:** 2026-07-15
-**Location:** `F:\Jason Hood\Claude code\WazzaBerry\wazzaberry-saas`
+**Started:** 2026-07-15 · **Last updated:** 2026-07-22
 **Live:** https://wazzaberry-saas.vercel.app
+**Repo:** https://github.com/jasonhood922/wazzaberry-saas
+
+> Companion docs: `HANDOFF.md` (process + new-environment bootstrap — read first),
+> `PROJECT_MEMORY.md` (decision history + standing directives), `BRAND.md` (brand rules).
 
 ---
 
 ## Stack
-- Next.js 15+ (App Router) + TypeScript + Tailwind CSS v4.
-- Fully static/SSG — no backend yet; deployed on Vercel.
-- Shared marketing data (nav, stats, testimonials, pricing) in `lib/site.ts`.
+- Next.js (App Router) + TypeScript + Tailwind CSS v4.
+- Supabase (auth + Postgres with row-level security), Vercel Blob (waitlist), Vercel hosting.
+- `lib/llm.ts` — provider-agnostic AI layer: Anthropic `claude-opus-4-8` primary when `ANTHROPIC_API_KEY` is set, Kie.ai `deepseek-chat` backup (one retry), static fallbacks last.
+- GitHub Actions CI (`.github/workflows/ci.yml`): lint + build on every push/PR.
+
+## Delivery process
+**Push to `main` → CI runs → Vercel auto-deploys production.** The GitHub repo is connected to Vercel project `jason-hood-team/wazzaberry-saas`; CLI deploys (`npx vercel --prod`) remain possible but are not the primary path. All runtime secrets live in Vercel Production env — a new environment recovers them with `npx vercel link && npx vercel env pull .env.local` (see HANDOFF §0).
 
 ## Pages
-| Route | Purpose |
-|---|---|
-| `/` | Marketing page: hero + dashboard mockup, trust marquee, 4-slide agent carousel, 3-step how-it-works, feature grid (Lead discovery / Outreach / Learning / Control / Replies), stack-replacement card, animated stats, testimonials, integrations, pricing (Pro $99 + Custom), gradient CTA |
-| `/faq` | 11-question accordion |
-| `/affiliate` | 30% recurring affiliate program |
-| `/connect-mcp` | "Drive your agent from Claude via MCP" guide |
-| `/terms`, `/privacy`, `/legal-notice`, `/opt-out` | Legal set (placeholders — replace with lawyer-reviewed text before charging customers) |
-| `/app` | Product demo (sample data): dashboard KPIs + warm-lead table, campaigns, unified inbox with agent-drafted replies, 5-step onboarding wizard |
+| Route | Purpose | Status |
+|---|---|---|
+| `/` | Marketing page: hero + dashboard mockup, capability marquee, agent carousel (AI illustration), how-it-works (banner art), feature grid, stats, labelled design-partner testimonials, integrations, pricing (Pro $99 + Custom), working waitlist CTA | Live |
+| `/faq`, `/affiliate`, `/connect-mcp` | FAQ accordion · affiliate program · MCP guide (banner art) | Live |
+| `/terms`, `/privacy`, `/legal-notice`, `/opt-out` | Legal set | **Placeholders — lawyer review required before charging** |
+| `/login`, `/signup`, `/forgot-password` → `/auth/confirm` → `/reset-password` | Full Supabase auth incl. password recovery | Live |
+| `/app` | Dashboard: saved agent config, pause/resume, live/sample-labelled lead table, illustrated empty state | Live |
+| `/app/onboarding` | 5-step wizard; AI website inference via `/api/onboard` (fallback-safe); saves/prefills agent config | Live |
+| `/app/campaigns` | **Full CRUD**: create (name + channels), pause/resume, delete — persisted with RLS | Live |
+| `/app/inbox` | Sample threads + AI "Redraft" action via `/api/draft-reply` (auth-required, fallback-safe) | Demo |
+| `/app/settings` | Password change, retire agent | Live |
+| `/app/waitlist` | Admin-only signup viewer (`ADMIN_EMAILS` gate) | Live |
 
-## Brand
-- Identity: dotted-berry + radar-arc mark. Canonical SVG in `components/Logo.tsx`; raster mark in `public/brand/logo.png`; favicon `app/icon.svg`; social card `public/og.png`.
-- Illustrations (`public/illustrations/`, generated via Kie.ai nano-banana, 2026-07-15): `berry-radar.png` (agent carousel visual, OG card, dashboard empty state) and `radar-sweep.png` (how-it-works banner). Note: both the Kie account (~0.8 credits) and the Higgsfield workspace are out of credits — top up either before requesting new assets.
-- Palette and voice: see `BRAND.md`.
-- Testimonial portraits are AI-generated and the site labels them as illustrative — replace with real customer quotes as they arrive.
+## Data
+- **Active DB: Supabase `wazzaberry-v2`** (ref `muxpticwqsdqhoqiambp`, us-east-1). Tables `agents`, `campaigns`, `leads`, `messages` — all own-rows RLS + indexes. Older project `wazzaberry` (ref `kkuxhlubynwbahukpjzk`) is orphaned; safe to delete.
+- Waitlist: private Vercel Blob store `wazzaberry-waitlist`, one JSON blob per signup.
 
-## Deployment
-- Vercel project: `jason-hood-team/wazzaberry-saas` (CLI deploys via `npx vercel --prod`).
-- GitHub: `jasonhood922/wazzaberry-saas` (origin).
-- Env var (Production): `NEXT_PUBLIC_SITE_URL=https://wazzaberry-saas.vercel.app` — drives sitemap/OG/robots URLs.
-- Optional: connect the GitHub repo in Vercel project Settings → Git for auto-deploys on push.
+## Security & hardening
+- IP rate limits: `/api/waitlist` 10/h, `/api/onboard` 5/h; `/api/draft-reply` requires auth (20/h/user).
+- Site-wide headers: HSTS, nosniff, frame-deny, referrer/permissions policies.
+- Limiter is per-instance best-effort — swap for Redis/Upstash at real scale.
 
-## To run locally
-```bash
-npm install
-npm run dev   # http://localhost:3000
-```
+## Brand & assets
+- Identity: dotted-berry + radar-arc. SVG `components/Logo.tsx`, raster `public/brand/logo.png`, favicon `app/icon.svg`, OG card `public/og.png`.
+- AI illustrations (`public/illustrations/`, Kie nano-banana, WebP): `berry-radar` (carousel/OG/empty state), `radar-sweep` (how-it-works), `mcp-connect` (MCP page), `berry-404` (404). Avatars in `public/avatars/` (labelled illustrative).
+- Kie account: ~9,200 credits for future assets; key rotated 2026-07-22.
 
-## Production checklist (to run this as a real SaaS)
-1. **Auth** — DONE (2026-07-15): Supabase Auth via `@supabase/ssr`. Project `wazzaberry` (ref `kkuxhlubynwbahukpjzk`, us-east-1) under jasonhood922's Supabase org. `/signup`, `/login`, logout in the app header; session-refresh middleware; `/app` shows the signed-in user (demo badge for anonymous visitors). Env vars `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` set locally (`.env.local`) and in Vercel Production. Note: `mailer_autoconfirm` is ON (no email verification) because no SMTP is configured — set up SMTP in Supabase and turn confirmations back on before public launch. DB password is in `.env.local`.
-2. **Database** — STARTED (2026-07-15): `public.agents` table (one row per user, RLS policies for select/insert/update/delete own rows). The onboarding wizard upserts the signed-in user's agent config (website, offer, ICP, signals, channels, mode); anonymous visitors are sent to signup at launch. The dashboard greeting reflects the saved agent. Agent management (2026-07-15): dashboard pause/resume toggle persists `agents.status`; the wizard prefills the saved config and becomes an update flow; `/app/settings` (auth-required) offers password change and retire-agent. All verified locally and in production. Next: `leads`, `campaigns`, `messages` tables when the real prospecting engine lands.
-3. **Payments** — Stripe subscriptions for the Pro plan + customer portal.
-4. **AI layer** — STARTED (2026-07-15): `POST /api/onboard` fetches the user's website server-side and asks Kie.ai (`deepseek-chat`, `KIE_API_KEY` in `.env.local` + Vercel Production) to infer offer/ICP/tone/signals; the wizard shows the result and saves it with the agent. Falls back to a starter profile (with an on-page notice) when the fetch or LLM call fails — currently always, because the Kie account is out of credits; top up at kie.ai to activate. Still ahead: lead scoring, message and reply drafting (consider a direct Anthropic key for those).
-5. **Lead data / signals** — enrichment providers + signal sources; a waterfall across multiple providers.
-6. **Email sending** — Resend / SendGrid / Smartlead with warmed domains, plus unsubscribe/suppression handling (maps to `/opt-out`).
-7. **Social outreach** — official APIs where available; automating some social platforms violates their terms of service — a deliberate compliance decision.
-8. **Background jobs** — Inngest / Trigger.dev / Vercel Cron for 24/7 agent runs.
-9. **Compliance** — real Terms/Privacy/Legal drafted by counsel; GDPR/CAN-SPAM handling.
-10. **Analytics & monitoring** — PostHog/Plausible + Sentry.
-11. **Honest marketing** — DONE (2026-07-15): fabricated social proof replaced with truthful early-access positioning (capability marquee, product-promise stats, testimonials reframed as labelled design-partner concept scenarios). Swap in real customer quotes and numbers as they arrive.
-12. **Analytics** — `@vercel/analytics` is wired into the root layout; enable Web Analytics once in the Vercel dashboard (project → Analytics tab) to start collecting.
-13. **Waitlist** — DONE (2026-07-15): `POST /api/waitlist` validates emails and stores each signup as a JSON blob in the private `wazzaberry-waitlist` Vercel Blob store (linked to the project; token auto-provisioned). The final-CTA section captures emails with success/error states. Read signups anytime with `npx vercel blob list` (token in `.env.local` / project env). Tested end-to-end locally and in production; test entries removed.
+## Production checklist
+| # | Item | Status |
+|---|---|---|
+| 1 | Auth (Supabase, incl. password recovery) | ✅ Done — note: `mailer_autoconfirm` ON until SMTP configured |
+| 2 | Database (agents/campaigns/leads/messages + RLS; campaign CRUD in UI) | ✅ Done for current scope |
+| 3 | Waitlist (Blob) + admin viewer | ✅ Done |
+| 4 | AI layer (provider-agnostic; onboarding inference + reply drafting) | ✅ Built + verified fallback-safe. Activates via `ANTHROPIC_API_KEY` **or** Kie chat recovery (in maintenance since ~2026-07-21) |
+| 5 | Honest marketing pass | ✅ Done — swap in real numbers/quotes as customers arrive |
+| 6 | Analytics (`@vercel/analytics` wired) | ⚠️ Enable the toggle in Vercel dashboard |
+| 7 | CI + auto-deploy (GitHub → Vercel) | ✅ Done, verified green |
+| 8 | Payments — Stripe Pro $99 + portal | ❌ Not started (needs owner's keys) |
+| 9 | Email sending (Resend/etc.) + confirmations | ❌ Not started (needs SMTP account) |
+| 10 | Lead sourcing / signals providers | ❌ Not started (provider decision + compliance review) |
+| 11 | Background jobs for 24/7 agent runs | ❌ Not started |
+| 12 | Real legal pages | ❌ Lawyer required |
+| 13 | Custom domain | ❌ Owner action (then update `NEXT_PUBLIC_SITE_URL`) |
 
 ## Open items
-- [ ] Connect GitHub↔Vercel for auto-deploys (owner OAuth).
-- [ ] Custom domain (e.g. wazzaberry.com) + update `NEXT_PUBLIC_SITE_URL`.
-- [ ] Decide repo visibility (currently public).
-- [ ] Backend slice #1: auth + database (Supabase recommended).
+- [ ] Enable Vercel Web Analytics (dashboard toggle).
+- [ ] Stripe billing (item 8) — next major build once keys exist.
+- [ ] SMTP + re-enable email confirmations (item 9).
+- [ ] Custom domain; repo visibility decision (currently public).
+- [ ] Rotate remaining old tokens (Apify; old Supabase project's secret key).
+- [ ] Re-check Kie chat API recovery in the next session (the in-session watch loop does not transfer).
