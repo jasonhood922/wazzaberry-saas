@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { DbCampaign } from "./page";
@@ -76,12 +76,14 @@ export default function Campaigns({
   const [campaigns, setCampaigns] = useState(usingReal ? mapped : INITIAL);
 
   // Re-sync when router.refresh() delivers fresh server props — useState
-  // alone would keep showing the initial snapshot.
+  // alone would keep showing the initial snapshot. Uses React's
+  // adjust-state-during-render pattern (not an effect).
   const realKey = JSON.stringify(realCampaigns);
-  useEffect(() => {
-    setCampaigns(realCampaigns.length > 0 ? mapped : INITIAL);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [realKey]);
+  const [prevRealKey, setPrevRealKey] = useState(realKey);
+  if (prevRealKey !== realKey) {
+    setPrevRealKey(realKey);
+    setCampaigns(usingReal ? mapped : INITIAL);
+  }
 
   const [showForm, setShowForm] = useState(false);
   const [newName, setNewName] = useState("");
