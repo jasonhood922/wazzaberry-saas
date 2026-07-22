@@ -6,8 +6,8 @@ WazzaBerry learns your business from your website, hunts down high-intent prospe
 
 Built with **Next.js (App Router), TypeScript, and Tailwind CSS v4**.
 
-> New here? Start with [HANDOFF.md](./HANDOFF.md) — the full pick-up document.
-> Also: [PROJECT_LOG.md](./PROJECT_LOG.md) (build log + production checklist) and [BRAND.md](./BRAND.md) (brand guidelines).
+> New here (human or AI)? Start with [HANDOFF.md](./HANDOFF.md) — process, bootstrap, and secrets map.
+> Then [PROJECT_MEMORY.md](./PROJECT_MEMORY.md) (decision history + standing directives), [PROJECT_LOG.md](./PROJECT_LOG.md) (build log + production checklist), and [BRAND.md](./BRAND.md) (brand guidelines).
 
 **Live:** https://wazzaberry-saas.vercel.app
 

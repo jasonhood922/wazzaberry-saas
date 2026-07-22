@@ -1,11 +1,38 @@
 # WazzaBerry — Handoff Document
 
-**Last updated:** 2026-07-16
+**Last updated:** 2026-07-22
 **Owner:** Jason Hood (jason@jasonhood.me)
 **Live site:** https://wazzaberry-saas.vercel.app
 **Repo:** https://github.com/jasonhood922/wazzaberry-saas
 
 WazzaBerry is an AI-sales-agent SaaS: it learns a business from its website, finds warm, ready-to-buy leads, and runs multichannel outreach. This document is the single place a new developer (or a fresh AI session) needs to read to pick the project up.
+
+---
+
+## 0. THE PROCESS: GitHub → Vercel (read this first)
+
+The delivery pipeline is fully wired and machine-independent:
+
+1. **Push to `main` on GitHub** → GitHub Actions CI runs (`.github/workflows/ci.yml`: `npm ci` → lint → build) **and** Vercel auto-deploys to production. No CLI deploy needed.
+2. The Vercel project (`jason-hood-team/wazzaberry-saas`, account `jason-9448`) is connected to the GitHub repo — every push deploys; PRs get preview deploys.
+3. All runtime secrets live in **Vercel Production env vars** (see §3). CLI deploys (`npx vercel --prod`) still work but are no longer the primary path.
+
+### Bootstrapping a NEW development environment (e.g. Claude Code cloud)
+
+```bash
+git clone https://github.com/jasonhood922/wazzaberry-saas
+cd wazzaberry-saas
+npm install
+npx vercel link            # link to jason-hood-team/wazzaberry-saas (needs Vercel login as jason-9448)
+npx vercel env pull .env.local   # recovers ALL env vars incl. Supabase keys, Kie key, Blob token, DB password
+npm run dev
+```
+
+Every secret needed to run and administer the app is recoverable via `vercel env pull` — including `SUPABASE_DB_PASSWORD` (stored there 2026-07-22 for exactly this transfer). GitHub auth: `gh auth login` as `jasonhood922`. Supabase admin (SQL/DDL): use a Supabase personal access token from supabase.com → Account → Access Tokens against project ref `muxpticwqsdqhoqiambp`, or the SQL editor in the dashboard.
+
+### Session-mortal things that do NOT transfer
+- The **Kie chat recovery watch-loop** (an in-session poller) dies when the old session closes. Kie's chat API (`deepseek-chat`) has been in maintenance since ~2026-07-21; re-check it in the new session (one POST to `https://api.kie.ai/api/v1/chat/completions`). The app needs no code change either way.
+- The local dev-server launch config (`.claude/launch.json`) is committed and transfers fine.
 
 ---
 
@@ -18,7 +45,8 @@ Hero with CSS dashboard mockup · capability marquee · 4-slide agent carousel w
 - **Auth:** Supabase (`@supabase/ssr`) — `/signup`, `/login`, logout, session middleware, and full password recovery (`/forgot-password` → email link → `/auth/confirm` → `/reset-password`). Recovery emails use Supabase's built-in sender (rate-limited ~2/hour until SMTP is configured).
 - **Onboarding wizard** (`/app/onboarding`): enter website → **real AI inference** via `/api/onboard` (falls back to a starter profile when unavailable) → review ICP → channels + Copilot/Autopilot → launch. Saves to Postgres; prefills and becomes an update flow for existing agents.
 - **Dashboard** (`/app`): shows the saved agent (website, mode, channels) with working **pause/resume**; illustrated empty state for new users; sample lead table clearly labelled.
-- **Campaigns / Inbox** (`/app/campaigns`, `/app/inbox`): sample-data demos of the intended UX.
+- **Campaigns** (`/app/campaigns`): full CRUD — create (name + channels form), pause/resume, and delete, all persisted to Postgres; shows **Live data** when real rows exist, labelled sample data otherwise.
+- **Inbox** (`/app/inbox`): sample-data demo with AI "Redraft" action (see AI layer below).
 - **Settings** (`/app/settings`): password change, retire agent. Auth-required.
 
 ### Data & storage
@@ -52,7 +80,9 @@ Hero with CSS dashboard mockup · capability marquee · 4-slide agent carousel w
 | `BLOB_READ_WRITE_TOKEN` | Vercel project env (auto-linked) + `.env.local` |
 | `KIE_API_KEY` | `.env.local` + Vercel Production |
 | `NEXT_PUBLIC_SITE_URL` | Vercel Production (`https://wazzaberry-saas.vercel.app`) |
-| Supabase DB password | `.env.local` (`SUPABASE_DB_PASSWORD`) |
+| Supabase DB password | Vercel Production (`SUPABASE_DB_PASSWORD`, added 2026-07-22) + `.env.local` |
+| `KIE_API_KEY` (rotated 2026-07-22) | Vercel Production + `.env.local` |
+| `ADMIN_EMAILS` | Vercel Production + `.env.local` |
 
 Accounts: GitHub `jasonhood922` · Vercel `jason-9448` (team `jason-hood-team`) · Supabase org `jasonhood922's Org` · Kie.ai · Higgsfield (MCP; CLI installed but needs `higgsfield auth login`).
 
